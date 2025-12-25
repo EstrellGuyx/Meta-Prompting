@@ -9,6 +9,10 @@ interface SavedPrompt {
   timestamp: number;
   values: {
     subject: string;
+    action?: string;
+    background?: string;
+    time?: string;
+    emotion?: string;
     style: string;
     text: string;
     composition: string;
@@ -20,6 +24,10 @@ interface PromptHistoryProps {
   currentPrompt: string;
   currentValues: {
     subject: string;
+    action?: string;
+    background?: string;
+    time?: string;
+    emotion?: string;
     style: string;
     text: string;
     composition: string;
@@ -59,7 +67,7 @@ export default function PromptHistory({
     }
 
     const name = promptName.trim() || `Prompt ${new Date().toLocaleString('th-TH')}`;
-    
+
     const newPrompt: SavedPrompt = {
       id: Date.now().toString(),
       name,

@@ -5,6 +5,10 @@ import React from 'react';
 interface PromptEnhancerProps {
   values: {
     subject: string;
+    action?: string;
+    background?: string;
+    time?: string;
+    emotion?: string;
     style: string;
     text: string;
     composition: string;
@@ -23,7 +27,7 @@ export default function PromptEnhancer({ values }: PromptEnhancerProps) {
   const getSuggestions = (): Suggestion[] => {
     const suggestions: Suggestion[] = [];
 
-    // Check for empty required fields
+    // Check Subject (required)
     if (!values.subject.trim()) {
       suggestions.push({
         type: 'warning',
@@ -33,73 +37,101 @@ export default function PromptEnhancer({ values }: PromptEnhancerProps) {
       });
     }
 
-    if (!values.style.trim()) {
+    // Check Action
+    if (values.action && values.action.trim()) {
+      // Good!
+    } else if (values.subject.trim() && (values.subject.includes('คน') || values.subject.includes('ผู้'))) {
       suggestions.push({
         type: 'tip',
         icon: '💡',
-        message: 'ลองเพิ่ม "สไตล์" เพื่อกำหนดลักษณะของภาพ',
+        message: 'ลองเพิ่ม "ท่าทาง" เพื่อให้ตัวแบบมีความเคลื่อนไหว เช่น กำลังยิ้ม, กำลังเดิน',
+        field: 'action'
+      });
+    }
+
+    // Check Background
+    if (!values.background || !values.background.trim()) {
+      suggestions.push({
+        type: 'tip',
+        icon: '💡',
+        message: 'แนะนำให้เพิ่ม "ฉากหลัง" เพื่อกำหนดบรรยากาศ เช่น ในสตูดิโอ, ธรรมชาติ',
+        field: 'background'
+      });
+    }
+
+    // Check Style (important)
+    if (!values.style.trim()) {
+      suggestions.push({
+        type: 'warning',
+        icon: '⚠️',
+        message: 'ควรเพิ่ม "สไตล์" เพื่อกำหนดลักษณะของภาพ เช่น สมจริง, อนิเมะ, ไซเบอร์พังค์',
         field: 'style'
       });
     }
 
-    if (!values.quality.trim()) {
-      suggestions.push({
-        type: 'warning',
-        icon: '⚠️',
-        message: 'แนะนำให้เพิ่ม "คุณภาพ" เพื่อผลลัพธ์ที่ดีขึ้น (แสง, ความคมชัด)',
-        field: 'quality'
-      });
-    } else {
-      // Check if quality is comprehensive enough
-      const qualityLower = values.quality.toLowerCase();
-      const hasLighting = qualityLower.includes('แสง') || qualityLower.includes('light');
-      const hasResolution = qualityLower.includes('4k') || qualityLower.includes('8k') || 
-                           qualityLower.includes('ความคมชัด') || qualityLower.includes('ละเอียด');
-      
-      if (!hasLighting) {
-        suggestions.push({
-          type: 'tip',
-          icon: '💡',
-          message: 'ลองเพิ่มการตั้งค่า "แสง" เช่น แสงสตูดิโอ, แสงธรรมชาติ',
-          field: 'quality'
-        });
-      }
-      
-      if (!hasResolution) {
-        suggestions.push({
-          type: 'tip',
-          icon: '💡',
-          message: 'ลองเพิ่มความละเอียด เช่น 4K, 8K, ละเอียดสุดขีด',
-          field: 'quality'
-        });
-      }
-    }
-
+    // Check Composition
     if (!values.composition.trim()) {
       suggestions.push({
         type: 'tip',
         icon: '💡',
-        message: 'ลองเพิ่ม "องค์ประกอบ" เพื่อควบคุมมุมกล้องและการจัดวาง',
+        message: 'ลองเพิ่ม "องค์ประกอบ" เพื่อควบคุมมุมกล้อง เช่น มุมกว้าง, มุมใกล้ชิด',
         field: 'composition'
       });
     }
 
-    // Calculate completeness percentage
+    // Check Quality (important)
+    if (!values.quality.trim()) {
+      suggestions.push({
+        type: 'warning',
+        icon: '⚠️',
+        message: 'แนะนำให้เพิ่ม "คุณภาพ" เพื่อผลลัพธ์ที่ดีขึ้น เช่น ความคมชัด 4K, แสงสตูดิโอ',
+        field: 'quality'
+      });
+    } else {
+      const qualityLower = values.quality.toLowerCase();
+      const hasLighting = qualityLower.includes('แสง') || qualityLower.includes('light');
+      const hasResolution = qualityLower.includes('4k') || qualityLower.includes('8k') ||
+                           qualityLower.includes('ความคมชัด') || qualityLower.includes('ละเอียด');
+
+      if (!hasLighting) {
+        suggestions.push({
+          type: 'tip',
+          icon: '💡',
+          message: 'ลองเพิ่มการตั้งค่า "แสง" เช่น แสงสตูดิโอ, แสงธรรมชาติ, golden hour',
+          field: 'quality'
+        });
+      }
+
+      if (!hasResolution) {
+        suggestions.push({
+          type: 'tip',
+          icon: '💡',
+          message: 'ลองเพิ่มความละเอียด เช่น ความคมชัดระดับ 4K, 8K',
+          field: 'quality'
+        });
+      }
+    }
+
+    // Calculate completeness
     const filledFields = [
       values.subject,
+      values.action,
+      values.background,
+      values.time,
+      values.emotion,
       values.style,
       values.composition,
       values.quality
-    ].filter((v) => v.trim()).length;
-    
-    const percentage = Math.round((filledFields / 4) * 100);
+    ].filter((v) => v && v.trim()).length;
 
-    // Add success message if nearly complete
+    const percentage = Math.round((filledFields / 8) * 100);
+
+    // Success message
     if (percentage >= 75 && suggestions.filter(s => s.type === 'warning').length === 0) {
       suggestions.push({
         type: 'success',
         icon: '✅',
-        message: `Prompt ของคุณสมบูรณ์ ${percentage}% แล้ว!`,
+        message: `Prompt ของคุณสมบูรณ์ ${percentage}% แล้ว! พร้อมสร้างภาพคุณภาพสูง`,
         field: 'all'
       });
     }
@@ -108,7 +140,7 @@ export default function PromptEnhancer({ values }: PromptEnhancerProps) {
   };
 
   const suggestions = getSuggestions();
-  
+
   if (suggestions.length === 0) {
     return null;
   }
@@ -116,11 +148,15 @@ export default function PromptEnhancer({ values }: PromptEnhancerProps) {
   // Calculate progress
   const filledFields = [
     values.subject,
+    values.action,
+    values.background,
+    values.time,
+    values.emotion,
     values.style,
     values.composition,
     values.quality
-  ].filter((v) => v.trim()).length;
-  const percentage = Math.round((filledFields / 4) * 100);
+  ].filter((v) => v && v.trim()).length;
+  const percentage = Math.round((filledFields / 8) * 100);
 
   return (
     <div className="glass-card p-6 fade-in">
