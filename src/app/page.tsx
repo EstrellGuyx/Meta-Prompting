@@ -6,6 +6,8 @@ import PromptOutput from '@/components/PromptOutput';
 import TipsSection from '@/components/TipsSection';
 import TemplateSelector from '@/components/TemplateSelector';
 import QuickActions from '@/components/QuickActions';
+import PromptHistory from '@/components/PromptHistory';
+import PromptEnhancer from '@/components/PromptEnhancer';
 import { promptPresets, PromptTemplate } from '@/data/presets';
 
 export default function Home() {
@@ -76,6 +78,11 @@ export default function Home() {
     });
   };
 
+  // Load saved prompt
+  const handleLoadPrompt = (values: typeof promptValues) => {
+    setPromptValues(values);
+  };
+
   // Generate final prompt
   const generatePrompt = () => {
     const parts = [];
@@ -115,6 +122,13 @@ export default function Home() {
           onRandomAll={handleRandomAll}
         />
 
+        {/* Prompt History */}
+        <PromptHistory
+          currentPrompt={finalPrompt}
+          currentValues={promptValues}
+          onLoadPrompt={handleLoadPrompt}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Sections */}
           <div className="lg:col-span-2 space-y-6">
@@ -127,6 +141,9 @@ export default function Home() {
                 onPresetClick={(preset) => handlePresetClick(category.name.toLowerCase(), preset)}
               />
             ))}
+
+            {/* Prompt Enhancer */}
+            <PromptEnhancer values={promptValues} />
 
             {/* Tips Section */}
             <TipsSection />
